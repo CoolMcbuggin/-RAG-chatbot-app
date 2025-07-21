@@ -64,12 +64,17 @@ function App() {
     setInputMessage('')
 
     try {
-      const webhookUrl = new URL('https://n8n-service-pa9k.onrender.com/webhook/433709cf-fbc1-4a64-84aa-e9cdea16b6f5')
-      webhookUrl.searchParams.set('message', userMessage.content)
-      webhookUrl.searchParams.set('sessionId', sessionId)
+      const webhookUrl = 'https://n8n-service-pa9k.onrender.com/webhook/433709cf-fbc1-4a64-84aa-e9cdea16b6f5'
 
-      const response = await fetch(webhookUrl.toString(), {
-        method: 'GET',
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage.content,
+          sessionId: sessionId
+        })
       })
 
       if (!response.ok) {
