@@ -95,7 +95,18 @@ function App() {
       const responseData = await response.json()
       console.log('Webhook response data:', responseData)
       
-      const responseText = responseData.message || responseData.response || JSON.stringify(responseData)
+      // Extract and format the response text
+      let responseText = responseData.message || responseData.response || responseData.output || JSON.stringify(responseData)
+      
+      // If it's still JSON-like, try to parse and extract content
+      if (typeof responseText === 'string' && responseText.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(responseText)
+          responseText = parsed.output || parsed.message || parsed.response || responseText
+        } catch (e) {
+          // If parsing fails, use as-is
+        }
+      }
       
       const botMessage: Message = {
         id: uuidv4(),
@@ -148,7 +159,7 @@ function App() {
             <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Chatbot Assistant v1.2</h1>
+            <h1 className="text-xl font-semibold text-gray-900">Chatbot Assistant v1.15.3</h1>
             <p className="text-sm text-gray-500">Always here to help</p>
           </div>
         </div>
@@ -176,7 +187,7 @@ function App() {
                   : 'bg-blue-500 text-white'
               }`}
             >
-              <p className="text-sm">{message.content}</p>
+              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
               <p className={`text-xs mt-1 ${
                 message.isBot ? 'text-gray-500' : 'text-blue-100'
               }`}>
