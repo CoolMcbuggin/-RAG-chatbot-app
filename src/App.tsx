@@ -64,24 +64,20 @@ function App() {
     setInputMessage('')
 
     try {
-      const webhookUrl = 'https://n8n-service-pa9k.onrender.com/webhook/433709cf-fbc1-4a64-84aa-e9cdea16b6f5'
+      const webhookUrl = new URL('https://n8n-service-pa9k.onrender.com/webhook/433709cf-fbc1-4a64-84aa-e9cdea16b6f5')
+      webhookUrl.searchParams.set('message', userMessage.content)
+      webhookUrl.searchParams.set('sessionId', sessionId)
 
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          sessionId: sessionId
-        })
+      const response = await fetch(webhookUrl.toString(), {
+        method: 'GET',
       })
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const responseText = await response.text()
+      const responseData = await response.json()
+      const responseText = responseData.message || responseData.response || JSON.stringify(responseData)
       
       const botMessage: Message = {
         id: uuidv4(),
@@ -97,7 +93,16 @@ function App() {
       }))
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      console.error('Fetch error:', error)
+      let errorMessage = 'An unknown error occurred'
+      
+      if (error instanceof Error) {
+        if (error.message.includes('NetworkError') || error.name === 'TypeError') {
+          errorMessage = 'Network error: Check if n8n workflow is active and CORS is enabled'
+        } else {
+          errorMessage = error.message
+        }
+      }
       
       setState(prev => ({
         ...prev,
