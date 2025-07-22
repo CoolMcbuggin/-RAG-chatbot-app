@@ -115,10 +115,15 @@ function App() {
       let errorMessage = 'An unknown error occurred'
       
       if (error instanceof Error) {
-        if (error.message.includes('NetworkError') || error.name === 'TypeError') {
-          errorMessage = 'Network error: Check if n8n workflow is active and CORS is enabled'
+        console.log('Error name:', error.name)
+        console.log('Error message:', error.message)
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          errorMessage = `CORS/Network error: ${error.message}. Webhook expects origin: http://localhost:5173 but you may be on a different port.`
+        } else if (error.message.includes('NetworkError') || error.name === 'TypeError') {
+          errorMessage = `Network error: ${error.message}. Check if n8n workflow is active and CORS allows your origin.`
         } else {
-          errorMessage = error.message
+          errorMessage = `${error.name}: ${error.message}`
         }
       }
       
@@ -143,7 +148,7 @@ function App() {
             <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Chatbot Assistant v1.1</h1>
+            <h1 className="text-xl font-semibold text-gray-900">Chatbot Assistant v1.2</h1>
             <p className="text-sm text-gray-500">Always here to help</p>
           </div>
         </div>
