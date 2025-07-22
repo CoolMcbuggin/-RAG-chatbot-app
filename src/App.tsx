@@ -66,6 +66,12 @@ function App() {
     try {
       const webhookUrl = 'https://n8n-service-pa9k.onrender.com/webhook/433709cf-fbc1-4a64-84aa-e9cdea16b6f5'
 
+      console.log('Sending webhook request:', {
+        url: webhookUrl,
+        sessionId,
+        message: userMessage.content
+      })
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
@@ -77,11 +83,18 @@ function App() {
         })
       })
 
+      console.log('Webhook response status:', response.status)
+      console.log('Webhook response headers:', Object.fromEntries(response.headers.entries()))
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error('Webhook error response:', errorText)
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`)
       }
 
       const responseData = await response.json()
+      console.log('Webhook response data:', responseData)
+      
       const responseText = responseData.message || responseData.response || JSON.stringify(responseData)
       
       const botMessage: Message = {
@@ -130,7 +143,7 @@ function App() {
             <Bot className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">Chatbot Assistant</h1>
+            <h1 className="text-xl font-semibold text-gray-900">Chatbot Assistant v1.1</h1>
             <p className="text-sm text-gray-500">Always here to help</p>
           </div>
         </div>
